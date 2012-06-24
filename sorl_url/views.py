@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response
 from django.views.decorators.cache import cache_page
 from sorl.thumbnail.conf import settings
@@ -45,4 +45,10 @@ def image_handler(request, model_name, field_name, key, extension):
 
     backend = field_config.model_config.get_backend()
     thumbnail = backend.get_thumbnail(file_field, config['geometry'], **options)
-    return HttpResponseRedirect(thumbnail.url)
+
+    if getattr(settings, 'SORL_URL_PERMANENT_REDIRECT', False):
+        redirect = HttpResponsePermanentRedirect
+    else:
+        redirect = HttpResponseRedirect
+
+    return redirect(thumbnail.url)

@@ -98,9 +98,11 @@ Default options specified in ``SORL_URL_CONFIG`` and other sorl settings are **n
 Configuring Settings
 --------------------
 
-The available options and default are controlled by the ``SORL_URL_CONFIG`` setting.
+The available options and defaults are controlled by the ``SORL_URL_CONFIG`` setting.
 
 ``SORL_URL_CONFIG`` must be a dictionary-like object with keys corresponding to the ``MODEL_NAME`` URL component and a dictionary-like value representing the *model configuration*.
+
+Additionally ``SORL_URL_PERMANENT_REDIRECT`` (default: ``False``) can be used to control the type of redirect that is used.
 
 Model Configuration
 ~~~~~~~~~~~~~~~~~~~
