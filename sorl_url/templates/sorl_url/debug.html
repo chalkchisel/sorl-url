@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>sorl Image URL Debug</title>
+</head>
+<body>
+<h2>Geometry</h2>
+<ul>
+    <li>{{ geometry }}</li>
+</ul>
+<h2>Options</h2>
+<ul>
+{% for key,value in options.items %}
+    <li><strong>{{ key }}:</strong> {{ value }}</li>
+{% empty %}
+    <li><em>No options specified</em></li>
+{% endfor %}
+</ul>
+</body>
+</html>
