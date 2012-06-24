@@ -1,8 +1,10 @@
 import hashlib
 import json
+import zlib
 from django.core import signing
 from django.core.urlresolvers import reverse
 from django.db.models import get_model, Model
+from django.utils.encoding import smart_str
 from django.utils.importlib import import_module
 from sorl.thumbnail.base import EXTENSIONS
 from sorl.thumbnail.conf import settings
@@ -45,14 +47,37 @@ def generate_salt(model_name, field_name, instance_key, instance=None):
     return "sorl-%s(%s).%s=[%s]{%s}" % (model_name, instance_key, field_name, field_value, get_settings_hash())
 
 
+def serialize_and_sign(payload, salt, compress=False):
+    data = signing.JSONSerializer().dumps(payload)
+
+    prefix = ""
+
+    if compress:
+        compressed = zlib.compress(data, 9)
+        if len(compressed) < (len(data) - 1):  # Only use the compressed version if it's actually smaller
+            data = compressed
+            prefix = "."
+    encoded = prefix + signing.b64_encode(data)
+    return signing.Signer(None, salt=salt).sign(encoded)
+
+
+def verify_and_load(candidate, salt):
+    payload = smart_str(signing.Signer(None, salt=salt).unsign(candidate))
+    if payload[0] == '.':
+        data = zlib.decompress(signing.b64_decode(payload[1:]))
+    else:
+        data = signing.b64_decode(payload)
+    return signing.JSONSerializer().loads(data)
+
+
 def encode_for_url(payload, model_name, field_name, instance_key, instance=None, compress=True):
     salt = generate_salt(model_name, field_name, instance_key, instance=instance)
-    return signing.dumps(payload, salt=salt, compress=compress)
+    return serialize_and_sign(payload, salt=salt, compress=compress)
 
 
 def decode_from_url(encoded, model_name, field_name, instance_key, instance=None):
     salt = generate_salt(model_name, field_name, instance_key, instance=instance)
-    return signing.loads(encoded, salt=salt)
+    return verify_and_load(encoded, salt=salt)
 
 
 def lookup_field(obj, ref):
