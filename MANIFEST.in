@@ -1,0 +1,1 @@
+recursive-include sorl_url/templates/ *.html
