@@ -1,2 +1,5 @@
 *.py[c|o]
 *.DS_Store
+build
+dist
+sorl_url.egg-info

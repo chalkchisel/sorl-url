@@ -18,6 +18,7 @@ setup(
     license='BSD',
     url='https://github.com/bolster/sorl-url',
     packages=find_packages(exclude=['tests', 'tests.*']),
+    include_package_data=True,
     platforms='any',
     zip_safe=False,
     classifiers=[
