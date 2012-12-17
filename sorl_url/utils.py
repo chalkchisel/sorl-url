@@ -5,6 +5,7 @@ from django.core import signing
 from django.core.urlresolvers import reverse
 from django.db.models import get_model, Model
 from django.utils.encoding import smart_str
+from django.utils.functional import SimpleLazyObject, empty
 from django.utils.importlib import import_module
 from sorl.thumbnail.base import EXTENSIONS
 from sorl.thumbnail.conf import settings
@@ -147,6 +148,10 @@ class ThumbnailOptions(GettableWithConfig):
 
     def build_url(self, instance, field, geometry_string, model=None, **options):
         model = model if model else type(instance)
+        if model is SimpleLazyObject:
+            if instance._wrapped == empty:
+                instance._setup()
+            model = type(instance._wrapped)
 
         field_config = self.find_config_for_field(model, field)
 
