@@ -66,11 +66,8 @@ class ImageURLNode(ThumbnailNodeBase):
         if settings.THUMBNAIL_DUMMY:
             thumbnail_url = DummyImageFile(geometry).url
         elif getattr(instance, field):
-            try:
-                thumbnail_url = THUMBNAIL_OPTIONS.build_url(instance, field, geometry, **options)
-            except Exception, e:
-                print e
-        elif not self.direct_usage:
+            thumbnail_url = THUMBNAIL_OPTIONS.build_url(instance, field, geometry, **options)
+        else:
             return self.nodelist_empty.render(context)
 
         if self.direct_usage:
