@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.shortcuts import render_to_response
@@ -31,7 +32,13 @@ def image_handler(request, model_name, field_name, key, extension):
 
     config = request.GET.get('config', [])
     if config:
-        config = decode_from_url(config, model_name, field_name, key, instance=instance)
+        try:
+            config = decode_from_url(config, model_name, field_name, key, instance=instance)
+        except:
+            if settings.DEBUG:
+                raise
+            else:
+                raise Http404("Could not decode configuration.")
     else:
         raise Http404("No image configuration provided.")
 
