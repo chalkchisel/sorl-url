@@ -107,6 +107,15 @@ class GettableWithConfig(object):
             self._config = self.build_config()
         return self._config
 
+    def keys(self):
+        return self.config.keys()
+
+    def values(self):
+        return self.config.values()
+
+    def items(self):
+        return self.config.items()
+
     def get(self, key, default=NO_DEFAULT):
         if default is NO_DEFAULT:
             return self.config.get(key)
@@ -207,6 +216,11 @@ class ModelConfig(GettableWithConfig):
         self.model = get_model(*(config['model'].split('.')))
         self.name = name
         self.options = config.get('options', {})
+        self.precache = config.get('precache', {})
+
+        # Allow a list of sizes, or a dictionary mapping sizes to configurations
+        if not isinstance(self.precache, dict):
+            self.precache = {x: [] for x in self.precache}
 
     def get_instance(self, key):
         return self.model.objects.get(**{
