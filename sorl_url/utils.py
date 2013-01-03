@@ -38,14 +38,17 @@ def generate_key():
     return m.digest()
 
 
-def generate_salt(model_name, field_name, instance_key, instance=None):
+def generate_salt(model_name, field_name, instance_key):
+    return "sorl-%s(%s).%s" % (model_name, instance_key, field_name)
+
+
+def generate_hash(model_name, field_name, instance_key, instance=None):
     if instance is None:
         field_config = THUMBNAIL_OPTIONS[model_name][field_name]
         instance = field_config.get_instance(instance_key)
-
     field_value = getattr(instance, field_name).name
 
-    return "sorl-%s(%s).%s=[%s]{%s}" % (model_name, instance_key, field_name, field_value, get_settings_hash())
+    return hashlib.md5("%s{%s}" % (field_value, get_settings_hash())).hexdigest()[:8]
 
 
 def serialize_and_sign(payload, salt, compress=False):
@@ -197,14 +200,18 @@ class ThumbnailOptions(GettableWithConfig):
         encoded_config = encode_for_url(config, model_config.name,
             field_config.field, key, instance=instance)
 
-        return "%s?config=%s" % (
+        state_hash = generate_hash(model_config.name, field_config.field, key,
+            instance=instance)
+
+        return "%s?config=%s&h=%s" % (
             reverse('sorl_url', kwargs={
                 'model_name': model_config.name,
                 'field_name': field_config.field,
                 'key': key,
                 'extension': extension
             }),
-            encoded_config
+            encoded_config,
+            state_hash
         )
 
 
