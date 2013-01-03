@@ -75,12 +75,12 @@ def verify_and_load(candidate, salt):
 
 
 def encode_for_url(payload, model_name, field_name, instance_key, instance=None, compress=True):
-    salt = generate_salt(model_name, field_name, instance_key, instance=instance)
+    salt = generate_salt(model_name, field_name, instance_key)
     return serialize_and_sign(payload, salt=salt, compress=compress)
 
 
 def decode_from_url(encoded, model_name, field_name, instance_key, instance=None):
-    salt = generate_salt(model_name, field_name, instance_key, instance=instance)
+    salt = generate_salt(model_name, field_name, instance_key)
     return verify_and_load(encoded, salt=salt)
 
 
