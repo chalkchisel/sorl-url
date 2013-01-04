@@ -57,8 +57,9 @@ if celery:
             sender._meta.object_name)
         instance_model = "%s.%s" % (instance._meta.app_label,
             instance._meta.object_name)
+        kwargs.pop('signal', None)  # Signals can't be pickled
         handle_precache_task.delay(sender_model, instance_model,
-            model_config, **kwargs)
+            instance.pk, model_config, **kwargs)
 
 # A developer may choose to use a method other than Django signals
 # (e.g. non-Celery task queue) to handle the precache actions.
