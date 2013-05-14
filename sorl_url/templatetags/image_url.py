@@ -1,5 +1,6 @@
 import re
 from django import template
+from django.conf import settings as django_settings
 from django.utils.encoding import smart_str
 from sorl.thumbnail.conf import settings
 from sorl.thumbnail.images import DummyImageFile
@@ -69,6 +70,9 @@ class ImageURLNode(ThumbnailNodeBase):
             thumbnail_url = THUMBNAIL_OPTIONS.build_url(instance, field, geometry, **options)
         else:
             return self.nodelist_empty.render(context)
+
+        if getattr(django_settings, 'SORL_THUMBNAIL_PREFIX', ''):
+            thumbnail_url = "%s%s" % (django_settings.SORL_THUMBNAIL_PREFIX, thumbnail_url)
 
         if self.direct_usage:
             return thumbnail_url
