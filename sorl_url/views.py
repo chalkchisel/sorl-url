@@ -12,7 +12,7 @@ VALID_EXTENSIONS = {
 }
 
 
-@cache_page(60 * 15)
+## NOTE: CACHING APPLIED AT END OF FILE
 def image_handler(request, model_name, field_name, key, extension):
     extension = extension.upper()
     if extension not in VALID_EXTENSIONS:
@@ -53,9 +53,28 @@ def image_handler(request, model_name, field_name, key, extension):
     backend = field_config.model_config.get_backend()
     thumbnail = backend.get_thumbnail(file_field, config['geometry'], **options)
 
+    if getattr(settings, 'SORL_URL_SERVE_DIRECT', False):
+        import mimetypes
+        import time
+        from django.http import CompatibleStreamingHttpResponse
+        from django.utils.http import http_date
+
+        mimetype, encoding = mimetypes.guess_type("prefix.%s" % extension)
+        epoch_timestamp = time.time()
+        mimetype = mimetype or 'application/octet-stream'
+        data = thumbnail.read()
+
+        response = CompatibleStreamingHttpResponse(data, content_type=mimetype)
+        response["Last-Modified"] = http_date(epoch_timestamp)
+        response["Content-Length"] = len(data)
+        return response
+
     if getattr(settings, 'SORL_URL_PERMANENT_REDIRECT', False):
         redirect = HttpResponsePermanentRedirect
     else:
         redirect = HttpResponseRedirect
 
     return redirect(thumbnail.url)
+
+if getattr(settings, 'SORL_URL_SERVE_DIRECT', False):
+    image_handler = cache_page(60 * 15)(image_handler)
